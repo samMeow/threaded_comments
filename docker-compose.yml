@@ -1,0 +1,23 @@
+version: '3.1'
+
+services:
+    comment-demo-db:
+        image: postgres:12
+        container_name: comment-demo-db
+        ports:
+            - 5433:5432
+        restart: always
+        environment: 
+            POSTGRES_PASSWORD: example
+            POSTGRES_DB: comment-demo
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data
+        networks:
+            - comment-demo-network
+    # ruby-server:
+    #     image: 
+
+networks:
+    comment-demo-network:
+        external: 
+            name: comment-demo-network
