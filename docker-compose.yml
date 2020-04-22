@@ -10,6 +10,8 @@ services:
         environment: 
             POSTGRES_PASSWORD: example
             POSTGRES_DB: comment-demo
+            TZ: UTC
+            PGTZ: UTC
         volumes:
             - ./pgdata:/var/lib/postgresql/data
         networks:
