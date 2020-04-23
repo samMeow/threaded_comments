@@ -1,9 +1,16 @@
 GEM
   specs:
+    addressable (2.7.0)
+      public_suffix (>= 2.0.2, < 5.0)
+    backports (3.17.1)
     dotenv (2.7.5)
+    json-schema (2.8.1)
+      addressable (>= 2.4)
+    multi_json (1.14.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     pg (1.2.3)
+    public_suffix (4.0.4)
     rack (2.2.2)
     rack-protection (2.0.8.1)
       rack
@@ -14,6 +21,13 @@ GEM
       rack (~> 2.0)
       rack-protection (= 2.0.8.1)
       tilt (~> 2.0)
+    sinatra-contrib (2.0.8.1)
+      backports (>= 2.8.2)
+      multi_json
+      mustermann (~> 1.0)
+      rack-protection (= 2.0.8.1)
+      sinatra (= 2.0.8.1)
+      tilt (~> 2.0)
     tilt (2.0.10)
 
 PLATFORMS
@@ -21,9 +35,12 @@ PLATFORMS
 
 DEPENDENCIES
   dotenv (~> 2.7)
+  json-schema (~> 2.8)
   pg (~> 1.2)
+  rack (~> 2.2)
   sequel (~> 5.31)
   sinatra (~> 2.0)
+  sinatra-contrib (~> 2.0)
 
 BUNDLED WITH
    2.1.4

@@ -6,3 +6,9 @@ gem "sequel", "~> 5.31"
 gem "pg", "~> 1.2"
 
 gem "dotenv", "~> 2.7"
+
+gem "json-schema", "~> 2.8"
+
+gem "rack", "~> 2.2"
+
+gem "sinatra-contrib", "~> 2.0"

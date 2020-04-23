@@ -1,4 +1,6 @@
-require 'cgi'
+require 'json-schema'
+require 'rack'
+
 require_relative 'CRUDRoute'
 class CommentRoute < CRUDRoute
     get '/comments' do
@@ -7,11 +9,36 @@ class CommentRoute < CRUDRoute
     end
 
     get '/comments/list' do
-        param = CGI.parse(request.query_string)
-        thread_id = param['thread_id'][0].to_i
-        limit = (param['limit'][0].to_i || 20) + 1
-        offset = param['offset'][0].to_i
-        order = param['order'][0] || 'desc'
+        param = Rack::Utils.parse_query(request.query_string)
+        JSON::Validator.validate!({
+            type: 'object',
+            required: ['thread_id'],
+            properties: {
+                'thread_id' => {
+                    type: 'string',
+                    pattern: '^\d+$',
+                },
+                'limit' => {
+                    type: 'string',
+                    pattern: '^[1-9]\d+$',
+                },
+                'offset' => {
+                    type: 'string',
+                    pattern: '^\d+$',
+                },
+                'order' => {
+                    type: 'string',
+                    enum: ['asc', 'desc'],
+                },
+            },
+            additionalProperties: false,
+        }, param)
+        
+        
+        thread_id = param['thread_id'].to_i
+        limit = (param['limit'] || 20).to_i + 1
+        offset = (param['offset'] || 0).to_i
+        order = param['order'] || 'desc'
         data = Models::Comment
             .grouped_order_with_time(order)
             .where(thread_id: thread_id)
@@ -27,10 +54,30 @@ class CommentRoute < CRUDRoute
     end
 
     get '/comments/listPopular' do
-        param = CGI.parse(request.query_string)
-        thread_id = param['thread_id'][0].to_i
-        limit = (param['limit'][0].to_i || 20) + 1
-        offset = param['offset'][0].to_i
+        param = Rack::Utils.parse_query(request.query_string)
+        JSON::Validator.validate!({
+            type: 'object',
+            required: ['thread_id'],
+            properties: {
+                'thread_id' => {
+                    type: 'string',
+                    pattern: '^\d+$',
+                },
+                'limit' => {
+                    type: 'string',
+                    pattern: '^[1-9]\d+$',
+                },
+                'offset' => {
+                    type: 'string',
+                    pattern: '^\d+$',
+                },
+            },
+            additionalProperties: false,
+        }, param)
+
+        thread_id = param['thread_id'].to_i
+        limit = (param['limit'] || 20).to_i + 1
+        offset = (param['offset'] || 0).to_i
         data = Models::Comment
             .order_with_popular
             .where(thread_id: thread_id)
@@ -55,6 +102,30 @@ class CommentRoute < CRUDRoute
 
     post '/comments' do
         data = JSON.parse request.body.read
+        JSON::Validator.validate!({
+            type: 'object',
+            # TODO: user id should get from auth (header/session) instead
+            required: ['user_id', 'thread_id', 'message'],
+            properties: {
+                'user_id' => {
+                    type: 'integer',
+                    minimum: 1,
+                },
+                'thread_id' => {
+                    type: 'integer',
+                    minimum: 1,
+                },
+                'message' => {
+                    type: 'string',
+                    minLength: 1
+                },
+                'parent_id' => {
+                    type: 'integer',
+                    minimum: 1
+                }
+            }
+        }, data)
+        
         comment = Models::Comment.new(
             user_id: data['user_id'],
             thread_id: data['thread_id'],
@@ -63,8 +134,8 @@ class CommentRoute < CRUDRoute
         )
         if data.key?("parent_id")
             parent = Models::Comment.first(id: data["parent_id"])
-            if parent == nil
-                halt 409, {code: 409, message: "Parent Comment #{data["parent_id"]} not exist"}
+            if parent == nil or data['thread_id'] != parent.thread_id
+                json_error 409, "Parent Comment #{data["parent_id"]} not exist"
             end
             comment[:parent_id] = parent.id
             comment[:parent_path] = parent.path
