@@ -1,6 +1,8 @@
 require 'json-schema'
 require 'sinatra/reloader'
 
+require_relative '../helpers/error.helper'
+
 class CRUDRoute < Sinatra::Base
     set :show_exceptions, :after_handler
     helpers ErrorHelper

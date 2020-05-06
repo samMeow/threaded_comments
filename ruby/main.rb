@@ -1,17 +1,10 @@
 require 'sinatra/base'
 require 'sinatra/reloader'
+require 'sinatra/json'
 require 'sequel'
 require 'dotenv'
 
-Dotenv.load
-Sequel.default_timezone = :utc
-DB = Sequel.connect('postgres://postgres:example@127.0.0.1:5433/comment-demo?sslmode=disable', max_connections: 4)
-Sequel::Model.plugin :json_serializer
-Sequel::Model.plugin :insert_returning_select
 
-Dir[File.join(__dir__, 'helpers', '*.rb')].each{|file| require file}
-Dir[File.join(__dir__, 'routes', '*.route.rb')].each{|file| require file}
-Dir[File.join(__dir__, 'models', '*.rb')].each{|file| require file}
 
 class Time
     def to_s
@@ -20,9 +13,41 @@ class Time
 end
 
 class MyApp < Sinatra::Base
+    Sequel.default_timezone = :utc
+    Sequel::Model.plugin :json_serializer
+    Sequel::Model.plugin :insert_returning_select
+
+
+    template = 'postgres://%{username}:%{password}@%{host}:%{port}/%{database}%{query}'
+
     configure :development do
         register Sinatra::Reloader
+        Dotenv.load
     end
+
+    configure :production do
+        Dotenv.load('.env')
+    end
+
+    configure :development, :production do
+        Sequel.connect(template % {
+            username: ENV['POSTGRES_USERNAME'],
+            password: ENV['POSTGRES_PASSWORD'],
+            host: ENV['POSTGRES_HOST'],
+            port: ENV['POSTGRES_PORT'],
+            database: ENV['POSTGRES_DATABASE'],
+            query: '?sslmode=disable'
+        }, max_connections: 4)
+    end
+
+    configure :test do
+        Sequel.connect('mock://postgres')
+    end
+    
+    Dir[File.join(__dir__, 'helpers', '*.rb')].each{|file| require file}
+    Dir[File.join(__dir__, 'routes', '*.route.rb')].each{|file| require file}
+    Dir[File.join(__dir__, 'models', '*.rb')].each{|file| require file}
+
     # ... app code here ...
     use CommentRoute
     use UserRoute

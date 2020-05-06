@@ -1,6 +1,6 @@
 require 'json-schema'
-
 require_relative 'CRUDRoute'
+
 class UserRoute < CRUDRoute
     USER_SCHEMA = {
         type: 'object',
@@ -16,29 +16,31 @@ class UserRoute < CRUDRoute
 
     get '/users' do
         #debug
-        Models::User.order(:id).all.to_json
+        json Models::User.order(:id).all
     end
 
     get /\/users\/([\d]+)/ do |id|
-        user = Models::User.where(id: id).first
+        user = Models::User.with_pk(id)
         if user == nil
             json_error 404, "User #{id} not found"
         end
-        user.to_json
+        json user
     end
 
     post '/users' do
         data = JSON.parse request.body.read
         JSON::Validator.validate!(USER_SCHEMA, data)
-        id = Models::User.insert(name: data['name'])
-        Models::User.where(id: id).first.to_json
+        json Models::User.create(name: data['name'])
     end
 
     put '/users/:id' do |id|
         data = JSON.parse request.body.read
         JSON::Validator.validate!(USER_SCHEMA, data)
-        Models::User.where(id: id)
-            .update(name: data['name'])
-        Models::User.where(id: id).first.to_json
+        user = Models::User.find(id: id)
+        if user == nil
+            json_error 404, "User #{id} not found"
+        end
+        user.update(name: data['name'])
+        json user
     end
 end
