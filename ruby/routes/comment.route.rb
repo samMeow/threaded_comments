@@ -145,4 +145,24 @@ class CommentRoute < CRUDRoute
         comment.save
         comment.to_public.to_json
     end
+
+    post '/comments/:id/upvote' do |id|
+        comment = Models::Comment.with_pk(id)
+        if comment == nil
+            json_error 404, "Comment #{id} not found"
+        end
+        comment.update(upvote: comment.upvote + 1)
+        # Add upvote history in database for more comprehensive forumn
+        json comment
+    end
+
+    post '/comments/:id/downvote' do |id|
+        comment = Models::Comment.with_pk(id)
+        if comment == nil
+            json_error 404, "Comment #{id} not found"
+        end
+        comment.update(downvote: comment.downvote + 1)
+        # Add upvote history in database for more comprehensive forumn
+        json comment
+    end
 end

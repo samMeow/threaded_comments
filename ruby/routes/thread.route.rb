@@ -20,24 +20,27 @@ class ThreadRoute < CRUDRoute
     end
 
     get '/threads/:id' do |id|
-        thread = Models::Thread.where(id: id).first
+        thread = Models::Thread.with_pk(id)
         if thread == nil
-            halt 404, {code: 404, message: "Thread #{id} not found"}
+            json_error 404, "Thread #{id} not found"
         end
-        thread.to_json
+        json thread
     end
 
     post '/threads' do
         data = JSON.parse request.body.read
         JSON::Validator.validate!(THREAD_SCHEMA, data)
-        id = Models::Thread.insert(title: data["title"])
-        Models::Thread.where(id: id).first.to_json
+        json Models::Thread.create(title: data["title"])
     end
 
     put '/threads/:id' do |id|
         data = JSON.parse request.body.read
         JSON::Validator.validate!(THREAD_SCHEMA, data)
-        Models::Thread.where(id: id).update(title: data["title"])
-        Models::Thread.where(id: id).first.to_json
+        thread = Models::Thread.with_pk(id)
+        if thread == nil
+            json_error 404, "Thread #{id} not found"
+        end
+        thread.update(title: data["title"])
+        json thread
     end
 end
