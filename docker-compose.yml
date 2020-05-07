@@ -16,8 +16,13 @@ services:
             - ./pgdata:/var/lib/postgresql/data
         networks:
             - comment-demo-network
-    # ruby-server:
-    #     image: 
+    ruby-server:
+        dockerfile: ./ruby/dockerfile
+        container_name: ruby-server
+        ports:
+            - 4567:4567
+        networks: 
+            - comment-demo-network
 
 networks:
     comment-demo-network:
