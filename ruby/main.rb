@@ -32,6 +32,11 @@ class MyApp < Sinatra::Base
     Dir[File.join(__dir__, 'routes', '*.route.rb')].each{|file| require file}
     Dir[File.join(__dir__, 'models', '*.rb')].each{|file| require file}
 
+    options "*" do
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        200
+    end
+
     # ... app code here ...
     use CommentRoute
     use UserRoute

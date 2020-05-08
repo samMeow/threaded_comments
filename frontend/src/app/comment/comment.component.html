@@ -1,0 +1,8 @@
+<div *ngIf="loading$ | async">
+    Loading
+</div>
+<ul *ngIf="comments">
+    <li *ngFor="let c of comments">
+        {{ c.message }}
+    </li>
+</ul>

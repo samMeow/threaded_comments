@@ -13,6 +13,7 @@ class CRUDRoute < Sinatra::Base
 
     before do
         content_type 'application/json'
+        headers["Access-Control-Allow-Origin"] = "*"
     end
 
     error JSON::ParserError  do
