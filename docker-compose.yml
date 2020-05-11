@@ -17,7 +17,7 @@ services:
         networks:
             - comment-demo-network
     ruby-server:
-        build: ./ruby/Dockerfile
+        build: ./ruby
         container_name: ruby-server
         ports:
             - 4567:4567

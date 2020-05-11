@@ -2,7 +2,6 @@
 
 require 'json-schema'
 require 'rack'
-require 'awesome_print'
 
 require_relative 'crud.route'
 require_relative '../models/comment'
