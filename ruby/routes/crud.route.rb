@@ -6,7 +6,7 @@ require 'sinatra/reloader'
 require_relative '../helpers/error.helper'
 
 # rest route base
-class CRUDRoute < Sinatra::Base
+class CRUDRoute < Sinatra::Application
   set :show_exceptions, :after_handler
   helpers ErrorHelper
 

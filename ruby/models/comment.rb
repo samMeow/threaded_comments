@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+require 'sequel'
+
 module Models
   # comments table
-  class Comment < Sequel::Model(:comments)
+  class Comment < Sequel::Model
     many_to_one :user
     many_to_one :thread
 
@@ -45,3 +47,28 @@ module Models
     end
   end
 end
+
+# Table: comments
+# Columns:
+#  id          | bigint                      | PRIMARY KEY DEFAULT nextval('comments_id_seq'::regclass)
+#  thread_id   | bigint                      |
+#  parent_id   | bigint                      |
+#  user_id     | bigint                      |
+#  message     | text                        | NOT NULL
+#  depth       | integer                     | NOT NULL DEFAULT 0
+#  parent_path | ltree                       | NOT NULL DEFAULT ''::ltree
+#  path        | ltree                       | DEFAULT (parent_path || lpad(((id)::character varying(64))::text, 64, '0'::text))
+#  upvote      | integer                     | NOT NULL DEFAULT 0
+#  downvote    | integer                     | NOT NULL DEFAULT 0
+#  score       | integer                     | DEFAULT (upvote - downvote)
+#  create_time | timestamp without time zone | DEFAULT now()
+# Indexes:
+#  comments_pkey            | PRIMARY KEY btree (id)
+#  comments_thread_id_path  | btree (thread_id, path)
+#  comments_thread_id_score | btree (thread_id, score)
+# Foreign key constraints:
+#  comments_parent_id_fkey | (parent_id) REFERENCES comments(id) ON UPDATE CASCADE ON DELETE CASCADE
+#  comments_thread_id_fkey | (thread_id) REFERENCES threads(id) ON UPDATE CASCADE ON DELETE CASCADE
+#  comments_user_id_fkey   | (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
+# Referenced By:
+#  comments | comments_parent_id_fkey | (parent_id) REFERENCES comments(id) ON UPDATE CASCADE ON DELETE CASCADE

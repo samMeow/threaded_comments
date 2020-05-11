@@ -13,6 +13,20 @@ begin
   end
 
   task default: :spec
+
+  task :annotate do
+    require 'sequel'
+    require 'dotenv'
+    Dotenv.load('.env.dev', '.env')
+    Sequel.connect(ENV['POSTGRES_URL'], max_connections: 4)
+
+    # Load the models first
+    Dir['models/*.rb'].each{|f| require_relative f}
+  
+    require 'sequel/annotate'
+    Sequel::Annotate.annotate(Dir['models/*.rb'], namespace: 'Models')
+  end
+
 rescue LoadError
   # no rspec available
 end

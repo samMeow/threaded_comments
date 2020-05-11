@@ -9,7 +9,7 @@ require 'dotenv'
 require_relative 'helpers/time'
 
 # main application
-class MyApp < Sinatra::Base
+class MyApp < Sinatra::Application
   Sequel.default_timezone = :utc
   Sequel::Model.plugin :json_serializer
   Sequel::Model.plugin :insert_returning_select
