@@ -1,168 +1,169 @@
+# frozen_string_literal: true
+
 require 'json-schema'
 require 'rack'
 
-require_relative 'CRUDRoute'
+require_relative 'crud.route'
+
+# rubocop:disable Metrics/ClassLength, Style/Documentation
 class CommentRoute < CRUDRoute
-    get '/comments' do
-        # debug
-        Models::Comment.order(:id).all.to_json
+  # rubocop:enable Metrics/ClassLength, Style/Documentation
+  get '/comments' do
+    # debug
+    Models::Comment.order(:id).all.to_json
+  end
+
+  GET_LIST_SCHEMA = {
+    type: 'object',
+    required: ['thread_id'],
+    properties: {
+      'thread_id' => {
+        type: 'string',
+        pattern: '^\d+$'
+      },
+      'limit' => {
+        type: 'string',
+        pattern: '^[1-9]\d+$'
+      },
+      'offset' => {
+        type: 'string',
+        pattern: '^\d+$'
+      },
+      'order' => {
+        type: 'string',
+        enum: %w[asc desc]
+      }
+    },
+    additionalProperties: false
+  }.freeze
+  get '/comments/list' do
+    param = Rack::Utils.parse_query(request.query_string)
+    JSON::Validator.validate!(GET_LIST_SCHEMA, param)
+
+    thread_id = param['thread_id'].to_i
+    limit = (param['limit'] || 20).to_i + 1
+    offset = (param['offset'] || 0).to_i
+    order = param['order'] || 'desc'
+    data = Models::Comment
+           .grouped_order_with_time(order)
+           .where(thread_id: thread_id)
+           .limit(limit)
+           .offset(offset)
+           .all
+    {
+      meta: {
+        has_next_page: data.length == limit
+      },
+      data: data.map(&:to_public)
+    }.to_json
+  end
+
+  GET_POPULAR_SCHEMA = {
+    type: 'object',
+    required: ['thread_id'],
+    properties: {
+      'thread_id' => {
+        type: 'string',
+        pattern: '^\d+$'
+      },
+      'limit' => {
+        type: 'string',
+        pattern: '^[1-9]\d+$'
+      },
+      'offset' => {
+        type: 'string',
+        pattern: '^\d+$'
+      }
+    },
+    additionalProperties: false
+  }.freeze
+  get '/comments/listPopular' do
+    param = Rack::Utils.parse_query(request.query_string)
+    JSON::Validator.validate!(GET_POPULAR_SCHEMA, param)
+
+    thread_id = param['thread_id'].to_i
+    limit = (param['limit'] || 20).to_i + 1
+    offset = (param['offset'] || 0).to_i
+    data = Models::Comment
+           .order_with_popular
+           .where(thread_id: thread_id)
+           .limit(limit)
+           .offset(offset)
+           .all
+    {
+      meta: {
+        has_next_page: data.length == limit
+      },
+      data: data.map(&:to_public)
+    }.to_json
+  end
+
+  get '/comments/:id' do |id|
+    comment = Models::Comment.first(id: id)
+    halt 404, { code: 404, message: "Comment #{id} not found" } if comment.nil?
+    comment.to_public.to_json
+  end
+
+  POST_COMMENT_SCHEMA = {
+    type: 'object',
+    # TODO: user id should get from auth (header/session) instead
+    required: %w[user_id thread_id message],
+    properties: {
+      'user_id' => {
+        type: 'integer',
+        minimum: 1
+      },
+      'thread_id' => {
+        type: 'integer',
+        minimum: 1
+      },
+      'message' => {
+        type: 'string',
+        minLength: 1
+      },
+      'parent_id' => {
+        type: 'integer',
+        minimum: 1
+      }
+    }
+  }.freeze
+  post '/comments' do
+    data = JSON.parse request.body.read
+    JSON::Validator.validate!(POST_COMMENT_SCHEMA, data)
+
+    comment = Models::Comment.new(
+      user_id: data['user_id'],
+      thread_id: data['thread_id'],
+      parent_id: nil,
+      message: data['message']
+    )
+    if data.key?('parent_id')
+      parent = Models::Comment.first(id: data['parent_id'])
+      if parent.nil? || (data['thread_id'] != parent.thread_id)
+        json_error 409, "Parent Comment #{data['parent_id']} not exist"
+      end
+      comment[:parent_id] = parent.id
+      comment[:parent_path] = parent.path
+      comment[:depth] = parent.depth + 1
     end
 
-    get '/comments/list' do
-        param = Rack::Utils.parse_query(request.query_string)
-        JSON::Validator.validate!({
-            type: 'object',
-            required: ['thread_id'],
-            properties: {
-                'thread_id' => {
-                    type: 'string',
-                    pattern: '^\d+$',
-                },
-                'limit' => {
-                    type: 'string',
-                    pattern: '^[1-9]\d+$',
-                },
-                'offset' => {
-                    type: 'string',
-                    pattern: '^\d+$',
-                },
-                'order' => {
-                    type: 'string',
-                    enum: ['asc', 'desc'],
-                },
-            },
-            additionalProperties: false,
-        }, param)
-        
-        
-        thread_id = param['thread_id'].to_i
-        limit = (param['limit'] || 20).to_i + 1
-        offset = (param['offset'] || 0).to_i
-        order = param['order'] || 'desc'
-        data = Models::Comment
-            .grouped_order_with_time(order)
-            .where(thread_id: thread_id)
-            .limit(limit)
-            .offset(offset)
-            .all
-        {
-            meta: {
-                has_next_page: data.length() == limit
-            },
-            data: data.map{|x| x.to_public}
-        }.to_json
-    end
+    comment.save
+    comment.to_public.to_json
+  end
 
-    get '/comments/listPopular' do
-        param = Rack::Utils.parse_query(request.query_string)
-        JSON::Validator.validate!({
-            type: 'object',
-            required: ['thread_id'],
-            properties: {
-                'thread_id' => {
-                    type: 'string',
-                    pattern: '^\d+$',
-                },
-                'limit' => {
-                    type: 'string',
-                    pattern: '^[1-9]\d+$',
-                },
-                'offset' => {
-                    type: 'string',
-                    pattern: '^\d+$',
-                },
-            },
-            additionalProperties: false,
-        }, param)
+  post '/comments/:id/upvote' do |id|
+    comment = Models::Comment.with_pk(id)
+    json_error 404, "Comment #{id} not found" if comment.nil?
+    comment.update(upvote: comment.upvote + 1)
+    # Add upvote history in database for more comprehensive forumn
+    json comment
+  end
 
-        thread_id = param['thread_id'].to_i
-        limit = (param['limit'] || 20).to_i + 1
-        offset = (param['offset'] || 0).to_i
-        data = Models::Comment
-            .order_with_popular
-            .where(thread_id: thread_id)
-            .limit(limit)
-            .offset(offset)
-            .all
-        {
-            meta: {
-                has_next_page: data.length() == limit
-            },
-            data: data.map{|x| x.to_public}
-        }.to_json
-    end
-
-    get '/comments/:id' do |id|
-        comment = Models::Comment.first(id: id)
-        if comment == nil
-            halt 404, {code: 404, message: "Comment #{id} not found"}
-        end
-        comment.to_public.to_json
-    end
-
-    post '/comments' do
-        data = JSON.parse request.body.read
-        JSON::Validator.validate!({
-            type: 'object',
-            # TODO: user id should get from auth (header/session) instead
-            required: ['user_id', 'thread_id', 'message'],
-            properties: {
-                'user_id' => {
-                    type: 'integer',
-                    minimum: 1,
-                },
-                'thread_id' => {
-                    type: 'integer',
-                    minimum: 1,
-                },
-                'message' => {
-                    type: 'string',
-                    minLength: 1
-                },
-                'parent_id' => {
-                    type: 'integer',
-                    minimum: 1
-                }
-            }
-        }, data)
-        
-        comment = Models::Comment.new(
-            user_id: data['user_id'],
-            thread_id: data['thread_id'],
-            parent_id: nil,
-            message: data['message']
-        )
-        if data.key?("parent_id")
-            parent = Models::Comment.first(id: data["parent_id"])
-            if parent == nil or data['thread_id'] != parent.thread_id
-                json_error 409, "Parent Comment #{data["parent_id"]} not exist"
-            end
-            comment[:parent_id] = parent.id
-            comment[:parent_path] = parent.path
-            comment[:depth] = parent.depth + 1
-        end
-        
-        comment.save
-        comment.to_public.to_json
-    end
-
-    post '/comments/:id/upvote' do |id|
-        comment = Models::Comment.with_pk(id)
-        if comment == nil
-            json_error 404, "Comment #{id} not found"
-        end
-        comment.update(upvote: comment.upvote + 1)
-        # Add upvote history in database for more comprehensive forumn
-        json comment
-    end
-
-    post '/comments/:id/downvote' do |id|
-        comment = Models::Comment.with_pk(id)
-        if comment == nil
-            json_error 404, "Comment #{id} not found"
-        end
-        comment.update(downvote: comment.downvote + 1)
-        # Add upvote history in database for more comprehensive forumn
-        json comment
-    end
+  post '/comments/:id/downvote' do |id|
+    comment = Models::Comment.with_pk(id)
+    json_error 404, "Comment #{id} not found" if comment.nil?
+    comment.update(downvote: comment.downvote + 1)
+    # Add upvote history in database for more comprehensive forumn
+    json comment
+  end
 end
