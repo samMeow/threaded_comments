@@ -5,7 +5,7 @@ require 'sequel'
 module Models
   # user
   class User < Sequel::Model
-    one_to_many :comments
+    one_to_many :comments, class: 'Models::Comment'
   end
 end
 

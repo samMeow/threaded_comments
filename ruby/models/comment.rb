@@ -5,17 +5,17 @@ require 'sequel'
 module Models
   # comments table
   class Comment < Sequel::Model
-    many_to_one :user
-    many_to_one :thread
+    many_to_one :user, class: 'Models::User'
+    many_to_one :thread, class: 'Models::Thread'
 
     def to_public
-      json_serializer_opts(except: %i[path parent_path])
+      json_serializer_opts(except: %i[path parent_path], include: :user)
       self
     end
 
     dataset_module do
       def to_public
-        json_serializer_opts(except: %i[path parent_path])
+        json_serializer_opts(except: %i[path parent_path], include: :user)
         self
       end
 

@@ -14,3 +14,6 @@ Style/HashTransformKeys:
     Enabled: true
 Style/HashTransformValues:
     Enabled: true
+Metrics/LineLength:
+    Max: 80
+    IgnoredPatterns: ['\A#']

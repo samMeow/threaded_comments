@@ -2,15 +2,22 @@
 
 require 'json-schema'
 require 'rack'
+require 'awesome_print'
 
 require_relative 'crud.route'
+require_relative '../models/comment'
 
 # rubocop:disable Metrics/ClassLength, Style/Documentation
 class CommentRoute < CRUDRoute
+  def initialize(app = nil, comment_model = Models::Comment)
+    super(app)
+    @comment_model = comment_model
+  end
+
   # rubocop:enable Metrics/ClassLength, Style/Documentation
   get '/comments' do
     # debug
-    Models::Comment.order(:id).all.to_json
+    json @comment_model.order(:id).all
   end
 
   GET_LIST_SCHEMA = {
@@ -44,11 +51,12 @@ class CommentRoute < CRUDRoute
     limit = (param['limit'] || 20).to_i + 1
     offset = (param['offset'] || 0).to_i
     order = param['order'] || 'desc'
-    data = Models::Comment
+    data = @comment_model
            .grouped_order_with_time(order)
            .where(thread_id: thread_id)
            .limit(limit)
            .offset(offset)
+           .eager(:user)
            .all
     {
       meta: {
@@ -84,7 +92,8 @@ class CommentRoute < CRUDRoute
     thread_id = param['thread_id'].to_i
     limit = (param['limit'] || 20).to_i + 1
     offset = (param['offset'] || 0).to_i
-    data = Models::Comment
+    data = @comment_model
+           .eager(:user)
            .order_with_popular
            .where(thread_id: thread_id)
            .limit(limit)
@@ -99,7 +108,7 @@ class CommentRoute < CRUDRoute
   end
 
   get '/comments/:id' do |id|
-    comment = Models::Comment.first(id: id)
+    comment = @comment_model.first(id: id)
     halt 404, { code: 404, message: "Comment #{id} not found" } if comment.nil?
     comment.to_public.to_json
   end
@@ -131,14 +140,14 @@ class CommentRoute < CRUDRoute
     data = JSON.parse request.body.read
     JSON::Validator.validate!(POST_COMMENT_SCHEMA, data)
 
-    comment = Models::Comment.new(
+    comment = @comment_model.new(
       user_id: data['user_id'],
       thread_id: data['thread_id'],
       parent_id: nil,
       message: data['message']
     )
     if data.key?('parent_id')
-      parent = Models::Comment.first(id: data['parent_id'])
+      parent = @comment_model.first(id: data['parent_id'])
       if parent.nil? || (data['thread_id'] != parent.thread_id)
         json_error 409, "Parent Comment #{data['parent_id']} not exist"
       end
@@ -152,7 +161,7 @@ class CommentRoute < CRUDRoute
   end
 
   post '/comments/:id/upvote' do |id|
-    comment = Models::Comment.with_pk(id)
+    comment = @comment_model.with_pk(id)
     json_error 404, "Comment #{id} not found" if comment.nil?
     comment.update(upvote: comment.upvote + 1)
     # Add upvote history in database for more comprehensive forumn
@@ -160,7 +169,7 @@ class CommentRoute < CRUDRoute
   end
 
   post '/comments/:id/downvote' do |id|
-    comment = Models::Comment.with_pk(id)
+    comment = @comment_model.with_pk(id)
     json_error 404, "Comment #{id} not found" if comment.nil?
     comment.update(downvote: comment.downvote + 1)
     # Add upvote history in database for more comprehensive forumn

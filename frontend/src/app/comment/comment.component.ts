@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { loadingObserver } from 'utils/loading';
 
 import CommentService from './comment.service';
-import { Comment } from './comment'
+import { Comment } from './comment';
 
 const PAGE_SIZE = 20;
 @Component({
@@ -14,7 +14,7 @@ const PAGE_SIZE = 20;
   styles: [],
 })
 export class CommentComponent implements OnInit {
-  @Input() thread_id: number;
+  @Input() threadId: number;
 
   loading$ = new Subject<boolean>();
   comments: Comment[] = [];
@@ -26,10 +26,10 @@ export class CommentComponent implements OnInit {
   }
 
   getList() {
-    this.commentService.getList(this.thread_id, PAGE_SIZE, 0)
+    this.commentService.getList(this.threadId, PAGE_SIZE, 0)
       .pipe(loadingObserver(this.loading$))
       .subscribe(({ meta, data }) => {
         this.comments = data;
-      })
+      });
   }
 }

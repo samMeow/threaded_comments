@@ -5,8 +5,8 @@ require 'sequel'
 module Models
   # threads table
   class Thread < Sequel::Model
-    one_to_many :comments
-    one_to_one :first_comment, class: :Comment, order: :id
+    one_to_many :comments, class: 'Models::Comment'
+    one_to_one :first_comment, class: 'Models::Comment', order: :id
   end
 end
 

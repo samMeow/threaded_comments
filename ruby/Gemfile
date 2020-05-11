@@ -17,5 +17,6 @@ group :test do
 end
 
 group :development do
-  gem "sequel-annotate"
+  gem 'awesome_print'
+  gem 'sequel-annotate'
 end

@@ -10,7 +10,7 @@ import { ListResponse, Comment } from './comment';
 const handleError = <T>(result = {} as T) => (err: HttpErrorResponse) => {
   console.error(err);
   return of(result);
-}
+};
 
 @Injectable()
 export default class CommentService {
@@ -25,7 +25,7 @@ export default class CommentService {
       order: 'asc' | 'desc' = 'asc'
   ): Observable<ListResponse<Comment>> {
     const params = new HttpParams({
-      fromObject:{ 
+      fromObject: {
         thread_id: String(threadId),
         limit: String(limit),
         offset: String(offset),
