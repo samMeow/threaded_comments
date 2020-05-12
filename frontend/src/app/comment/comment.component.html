@@ -1,8 +1,17 @@
 <div *ngIf="loading$ | async">
-    Loading
+  Loading
 </div>
-<ul *ngIf="comments">
-    <li *ngFor="let c of comments">
-        {{ c.message }}
-    </li>
-</ul>
+<mat-form-field>
+  <mat-label>Sorting</mat-label>
+  <mat-select (selectionChange)="sortChange.next($event)" [value]="allowedSorting[0].value">
+    <mat-option *ngFor="let s of allowedSorting" [value]="s.value">
+      {{s.label}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+<mat-list *ngIf="comments">
+  <mat-list-item *ngFor="let c of comments | async">
+    {{ c.message }}
+  </mat-list-item>
+  <button *ngIf="showLoadMore$ | async" (click)="loadMoreClick.next($event)">Load more</button>
+</mat-list>

@@ -29,7 +29,7 @@ class CommentRoute < CRUDRoute
       },
       'limit' => {
         type: 'string',
-        pattern: '^[1-9]\d+$'
+        pattern: '^[1-9]\d*$'
       },
       'offset' => {
         type: 'string',
@@ -75,7 +75,7 @@ class CommentRoute < CRUDRoute
       },
       'limit' => {
         type: 'string',
-        pattern: '^[1-9]\d+$'
+        pattern: '^[1-9]\d*$'
       },
       'offset' => {
         type: 'string',

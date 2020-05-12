@@ -1,3 +1,5 @@
+import { User } from 'app/user/user';
+
 export interface ListResponse<T> {
   meta: { has_next_page: boolean };
   data: T[];
@@ -14,4 +16,5 @@ export interface Comment {
   upvote: number;
   downvote: number;
   create_time: string;
+  user: User;
 }
