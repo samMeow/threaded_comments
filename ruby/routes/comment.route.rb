@@ -47,21 +47,21 @@ class CommentRoute < CRUDRoute
     JSON::Validator.validate!(GET_LIST_SCHEMA, param)
 
     thread_id = param['thread_id'].to_i
-    limit = (param['limit'] || 20).to_i + 1
+    limit = (param['limit'] || 20).to_i
     offset = (param['offset'] || 0).to_i
     order = param['order'] || 'desc'
     data = @comment_model
            .grouped_order_with_time(order)
            .where(thread_id: thread_id)
-           .limit(limit)
+           .limit(limit + 1)
            .offset(offset)
            .eager(:user)
            .all
     {
       meta: {
-        has_next_page: data.length == limit
+        has_next_page: data.length == limit + 1
       },
-      data: data.map(&:to_public)
+      data: data[0, limit].map(&:to_public)
     }.to_json
   end
 
@@ -89,20 +89,20 @@ class CommentRoute < CRUDRoute
     JSON::Validator.validate!(GET_POPULAR_SCHEMA, param)
 
     thread_id = param['thread_id'].to_i
-    limit = (param['limit'] || 20).to_i + 1
+    limit = (param['limit'] || 20).to_i
     offset = (param['offset'] || 0).to_i
     data = @comment_model
            .eager(:user)
            .order_with_popular
            .where(thread_id: thread_id)
-           .limit(limit)
+           .limit(limit + 1)
            .offset(offset)
            .all
     {
       meta: {
-        has_next_page: data.length == limit
+        has_next_page: data.length == limit + 1
       },
-      data: data.map(&:to_public)
+      data: data[0, limit].map(&:to_public)
     }.to_json
   end
 

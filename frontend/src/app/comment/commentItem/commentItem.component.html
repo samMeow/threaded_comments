@@ -1,0 +1,12 @@
+<div>
+    <div>{{ comment.message }}</div>
+    <div>
+        <button (click)="upvote(comment.id)">{{ combinedUpvote$ | async }} Upvote</button>
+        <button (click)="downvote(comment.id)">{{ combinedDownvote | async }} Downvote</button>
+        <button>Reply</button>
+    </div>
+    <form [formGroup]="replyForm" (ngSubmit)="onReply(replyForm.value)">
+        <textarea name="message" formControlName="message"></textarea>
+        <button type="submit">Submit</button>
+    </form>
+</div>

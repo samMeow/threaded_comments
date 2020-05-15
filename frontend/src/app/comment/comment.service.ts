@@ -13,7 +13,7 @@ const handleError = <T>(result = {} as T) => (err: HttpErrorResponse) => {
 };
 
 @Injectable()
-export default class CommentService {
+export class CommentService {
   baseUrl = environment.commentAPIUrl;
 
   constructor(private http: HttpClient) {}
@@ -68,7 +68,7 @@ export default class CommentService {
     threadId: number,
     userId: number,
     message: string,
-    parentId?: string,
+    parentId?: number,
   ): Observable<Comment> {
     return this.http.post<Comment>(
       `${this.baseUrl}/comments`,
@@ -86,14 +86,14 @@ export default class CommentService {
     ).pipe(catchError(handleError(null)));
   }
 
-  upvote(commentId: string): Observable<Comment> {
+  upvote(commentId: number): Observable<Comment> {
     return this.http.post<Comment>(
       `${this.baseUrl}/comments/${commentId}/upvote`,
       {}
     ).pipe(catchError(handleError(null)));
   }
 
-  downvote(commentId: string): Observable<Comment> {
+  downvote(commentId: number): Observable<Comment> {
     return this.http.post<Comment>(
       `${this.baseUrl}/comments/${commentId}/downvote`,
       {}

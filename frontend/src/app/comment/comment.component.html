@@ -1,6 +1,7 @@
-<div *ngIf="loading$ | async">
-  Loading
-</div>
+<form [formGroup]="newCommentForm" (ngSubmit)="postComment(newCommentForm.value)">
+  <textarea name="message" formControlName="message"></textarea>
+  <button type="submit">Send</button>
+</form>
 <mat-form-field>
   <mat-label>Sorting</mat-label>
   <mat-select (selectionChange)="sortChange.next($event)" [value]="allowedSorting[0].value">
@@ -9,9 +10,12 @@
     </mat-option>
   </mat-select>
 </mat-form-field>
-<mat-list *ngIf="comments">
-  <mat-list-item *ngFor="let c of comments | async">
-    {{ c.message }}
+<mat-list *ngIf="comments$" class="list">
+  <mat-list-item *ngFor="let c of comments$ | async" class="list-item">
+    <app-comment-item [comment]="c" (afterReply)="afterReply($event)"></app-comment-item>
   </mat-list-item>
-  <button *ngIf="showLoadMore$ | async" (click)="loadMoreClick.next($event)">Load more</button>
+  <button *ngIf="canLoadMore$ | async" (click)="loadMoreClick.next($event)">Load more</button>
 </mat-list>
+<div *ngIf="loading$ | async">
+  Loading
+</div>

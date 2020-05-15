@@ -39,6 +39,7 @@ class MyApp < Sinatra::Application
 
   options '*' do
     response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     200
   end
 
