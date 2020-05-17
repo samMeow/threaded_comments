@@ -1,3 +1,46 @@
+:host {
+  width: 100%;
+  margin: auto;
+  display: block;
+  padding: 1rem;
+}
+
+@media screen and (min-width: 768px) {
+  :host {
+    width: 768px;
+  }
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+}
+.heading h1 {
+  flex: 1;
+}
+
 .list .list-item {
-    height: auto;
+  height: auto;
+}
+
+.reply-container {
+  display: flex;
+  padding: 0 1rem;
+}
+
+.reply-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  text-align: right;
+}
+
+.reply-textarea {
+  height: 4.5rem;
+}
+.reply-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 1rem;
+  margin-right: 1rem;
 }

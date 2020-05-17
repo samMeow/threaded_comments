@@ -1,20 +1,42 @@
-<form [formGroup]="newCommentForm" (ngSubmit)="postComment(newCommentForm.value)">
-  <textarea name="message" formControlName="message"></textarea>
-  <button type="submit">Send</button>
-</form>
-<mat-form-field>
-  <mat-label>Sorting</mat-label>
-  <mat-select (selectionChange)="sortChange.next($event)" [value]="allowedSorting[0].value">
-    <mat-option *ngFor="let s of allowedSorting" [value]="s.value">
-      {{s.label}}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+<div class="heading">
+  <h1>Thead 1</h1>
+  <mat-form-field>
+    <mat-label>Sorting</mat-label>
+    <mat-select (selectionChange)="sortChange.next($event)" [value]="allowedSorting[0].value">
+      <mat-option *ngFor="let s of allowedSorting" [value]="s.value">
+        {{s.label}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div class="reply-container">
+  <div class="reply-avatar">
+    <img src="assets/images/avatar.svg" alt="avatar" />
+  </div>
+  <form class="reply-form" [formGroup]="newCommentForm" (ngSubmit)="postComment(newCommentForm.value)">
+    <mat-form-field>
+      <textarea
+        matInput
+        cdkTextareaAutosize="false"
+        matAutosizeMinRows="4"
+        class="reply-textarea"
+        name="message"
+        formControlName="message"
+        placeholder="Post a comment"
+      ></textarea>
+    </mat-form-field>
+    <div class="reply-actions">
+      <button mat-stroked-button type="submit">
+        <mat-icon aria-hidden="false" aria-label="send">arrow_forward</mat-icon>
+      </button>
+    </div>
+  </form>
+</div>
 <mat-list *ngIf="comments$" class="list">
   <mat-list-item *ngFor="let c of comments$ | async" class="list-item">
     <app-comment-item [comment]="c" (afterReply)="afterReply($event)"></app-comment-item>
   </mat-list-item>
-  <button *ngIf="canLoadMore$ | async" (click)="loadMoreClick.next($event)">Load more</button>
+  <button mat-button *ngIf="canLoadMore$ | async" (click)="loadMoreClick.next($event)">Load more</button>
 </mat-list>
 <div *ngIf="loading$ | async">
   Loading

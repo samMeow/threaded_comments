@@ -93,7 +93,7 @@ export class CommentComponent implements OnInit {
             const parent = memo.findIndex(p => p.id === c.parent_id);
             const lastChild = findLastIndex(memo, child => child.parent_id === c.parent_id);
             const temp = [...memo];
-            temp.splice(Math.max(parent, lastChild), 0, c);
+            temp.splice(Math.max(parent, lastChild) + 1, 0, c);
             return temp;
           }, data);
         })

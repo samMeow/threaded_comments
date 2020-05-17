@@ -1,0 +1,73 @@
+:host {
+  width: 100%;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
+}
+
+.comment-container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 1rem;
+  margin-right: 1rem;
+}
+
+.comment-content {
+  flex: 1;
+}
+.comment-message {
+  word-break: break-all;
+}
+
+.comment-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.comment-time {
+  margin-left: 1rem;
+  font-weight: 300;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.vote-button {
+  line-height: 1.5rem;
+  min-width: 0;
+  padding: 0 0.25rem;
+  color: #888;
+}
+.vote-button:hover {
+  color: #111111;
+}
+
+.vote-divider {
+  border: 1px #888 solid;
+}
+
+.reply-container {
+  display: flex;
+}
+
+.reply-container[hidden] {
+  display: none;
+}
+
+.reply-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  text-align: right;
+}
+
+.reply-textarea {
+  height: 4.5rem;
+}

@@ -1,12 +1,49 @@
-<div>
-    <div>{{ comment.message }}</div>
-    <div>
-        <button (click)="upvote(comment.id)">{{ combinedUpvote$ | async }} Upvote</button>
-        <button (click)="downvote(comment.id)">{{ combinedDownvote | async }} Downvote</button>
-        <button>Reply</button>
+<div class="main-container" [ngStyle]="paddingStyle">
+  <div class="comment-container">
+    <div class="comment-avatar">
+      <img src="assets/images/avatar.svg" alt="avatar" />
     </div>
-    <form [formGroup]="replyForm" (ngSubmit)="onReply(replyForm.value)">
-        <textarea name="message" formControlName="message"></textarea>
-        <button type="submit">Submit</button>
-    </form>
+    <div class="comment-content">
+      <div>
+        <span class="comment-name">{{ comment.user.name }}</span>
+        <span class="comment-time">{{ comment.create_time }}</span>
+      </div>
+      <div class="comment-message">{{ comment.message }}</div>
+      <div>
+        <button mat-button (click)="upvote(comment.id)" class="vote-button">
+          <span [hidden]="!(combinedUpvote$ | async)">{{ combinedUpvote$ | async }}</span>
+          <mat-icon aria-hidden="false" aria-label="upvote">keyboard_arrow_up</mat-icon>
+        </button>
+        <span class="vote-divider"></span>
+        <button mat-button (click)="downvote(comment.id)" class="vote-button">
+          <span [hidden]="!(combinedDownvote | async)">{{ combinedDownvote | async }}</span>
+          <mat-icon aria-hidden="false" aria-label="downvote">keyboard_arrow_down</mat-icon>
+        </button>
+        <button mat-button (click)="replyClick.next($event)">Reply</button>
+      </div>
+      <div class="reply-container" [hidden]="showReply$ | async">
+        <div class="comment-avatar">
+          <img src="assets/images/avatar.svg" alt="avatar" />
+        </div>
+        <form [formGroup]="replyForm" (ngSubmit)="onReply(replyForm.value)" class="reply-form">
+          <mat-form-field>
+            <textarea
+              matInput
+              cdkTextareaAutosize="false"
+              matAutosizeMinRows="4"
+              name="message"
+              formControlName="message"
+              placeholder="Leave a comment"
+              class="reply-textarea"
+            ></textarea>
+          </mat-form-field>
+          <div class="reply-actions">
+            <button mat-stroked-button type="submit">
+              <mat-icon aria-hidden="false" aria-label="send">arrow_forward</mat-icon>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>

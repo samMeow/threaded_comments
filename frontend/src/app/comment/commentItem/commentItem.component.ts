@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { scan, startWith, map } from 'rxjs/operators';
 import { FormBuilder } from '@angular/forms';
@@ -15,7 +15,7 @@ import { Comment } from '../comment';
   providers: [CommentService],
   styleUrls: ['./commentItem.component.css']
 })
-export class CommentItemComponent {
+export class CommentItemComponent implements OnInit {
   @Input() comment: Comment;
   @Output() afterReply = new EventEmitter<Comment>();
 
@@ -23,6 +23,11 @@ export class CommentItemComponent {
 
   uiUpvote = new Subject<number>();
   uiDownvote = new Subject<number>();
+
+  replyClick = new Subject();
+  showReply$ = this.replyClick.asObservable()
+    .pipe(startWith(false))
+    .pipe(scan((last) => !last, false));
 
   combinedUpvote$ = this.uiUpvote.asObservable()
     .pipe(startWith(0))
@@ -44,10 +49,16 @@ export class CommentItemComponent {
     message: '',
   });
 
+  paddingStyle = {};
+
   constructor(
     private commentService: CommentService,
     private formBuilder: FormBuilder,
   ) {}
+
+  ngOnInit() {
+    this.paddingStyle = { 'padding-left': `${Math.min(this.comment?.depth || 0, 3) * 2.5}rem` };
+  }
 
   upvote(id: number) {
     this.commentService.upvote(id)
@@ -58,7 +69,7 @@ export class CommentItemComponent {
   downvote(id: number) {
     this.commentService.downvote(id)
       .pipe(loadingObserver(this.voteLoading))
-      .subscribe((result) => this.uiDownvote.next(result?.downvote || 0))
+      .subscribe((result) => this.uiDownvote.next(result?.downvote || 0));
   }
 
   onReply({ message }: { message: string }) {
