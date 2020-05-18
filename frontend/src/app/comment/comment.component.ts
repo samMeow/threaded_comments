@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { startWith, concatMap, scan, flatMap, share, map } from 'rxjs/operators';
 
@@ -18,7 +19,7 @@ const PAGE_SIZE = 5;
   styleUrls: ['./comment.component.css'],
 })
 export class CommentComponent implements OnInit {
-  @Input() threadId: number;
+  threadId: number;
   allowedSorting = [
     { value: 'list_desc', label: 'From new to old' },
     { value: 'list_asc', label: 'From old to new' },
@@ -46,9 +47,13 @@ export class CommentComponent implements OnInit {
   constructor(
     private commentService: CommentService,
     private formBuilder: FormBuilder,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      this.threadId = Number(params.get('threadId'));
+    });
     const listStream = this.sortChange$
       .pipe(flatMap(({ value }) =>
         this.loadMoreClick$

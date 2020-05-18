@@ -1,0 +1,19 @@
+<form class="thread-form" [formGroup]="newThreadForm" (ngSubmit)="createThread(newThreadForm.value)">
+  <mat-form-field>
+    <input
+      matInput
+      name="title"
+      formControlName="title"
+      placeholder="New Thread"
+      type="text"
+    />
+  </mat-form-field>
+  <button mat-stroked-button type="submit">
+    Create
+  </button>
+</form>
+<mat-nav-list *ngIf="threads.length > 0" class="list">
+  <a mat-list-item *ngFor="let t of threads" class="list-item" href="/threads/{{t.id}}">
+    {{ t.title }}
+  </a>
+</mat-nav-list>
