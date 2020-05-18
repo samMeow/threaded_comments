@@ -11,12 +11,12 @@
       <div class="comment-message">{{ comment.message }}</div>
       <div>
         <button mat-button (click)="upvote(comment.id)" class="vote-button">
-          <span [hidden]="!(combinedUpvote$ | async)">{{ combinedUpvote$ | async }}</span>
+          <span [hidden]="(combinedUpvote$ | async) === 0">{{ combinedUpvote$ | async }}</span>
           <mat-icon aria-hidden="false" aria-label="upvote">keyboard_arrow_up</mat-icon>
         </button>
         <span class="vote-divider"></span>
         <button mat-button (click)="downvote(comment.id)" class="vote-button">
-          <span [hidden]="!(combinedDownvote | async)">{{ combinedDownvote | async }}</span>
+          <span [hidden]="(combinedDownvote | async) === 0">{{ combinedDownvote | async }}</span>
           <mat-icon aria-hidden="false" aria-label="downvote">keyboard_arrow_down</mat-icon>
         </button>
         <button mat-button (click)="replyClick.next($event)">Reply</button>

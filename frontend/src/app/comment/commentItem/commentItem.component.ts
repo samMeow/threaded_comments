@@ -1,6 +1,6 @@
 import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { scan, startWith, map } from 'rxjs/operators';
+import { scan, startWith, map, flatMap } from 'rxjs/operators';
 import { FormBuilder } from '@angular/forms';
 
 import { loadingObserver } from 'utils/loading';
@@ -25,9 +25,14 @@ export class CommentItemComponent implements OnInit {
   uiDownvote = new Subject<number>();
 
   replyClick = new Subject();
-  showReply$ = this.replyClick.asObservable()
+  reset = new Subject();
+  showReply$ = this.reset.asObservable()
     .pipe(startWith(false))
-    .pipe(scan((last) => !last, false));
+    .pipe(flatMap(() =>
+      this.replyClick.asObservable()
+        .pipe(startWith(false))
+        .pipe(scan((last) => !last, false))
+    ));
 
   combinedUpvote$ = this.uiUpvote.asObservable()
     .pipe(startWith(0))
@@ -81,6 +86,7 @@ export class CommentItemComponent implements OnInit {
     ).subscribe((result) => {
       this.replyForm.reset();
       this.afterReply.emit(result);
+      this.reset.next();
     });
   }
 }

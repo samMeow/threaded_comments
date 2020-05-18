@@ -16,13 +16,18 @@ services:
             - ./pgdata:/var/lib/postgresql/data
         networks:
             - comment-demo-network
-    ruby-server:
+    comment-demo-ruby-server:
         build: ./ruby
-        container_name: ruby-server
+        container_name: comment-demo-ruby-server
         ports:
             - 4567:4567
         networks: 
             - comment-demo-network
+    comment-demo-frontend:
+        build: ./frontend
+        container_name: comment-demo-frontend
+        ports:
+            - 4200:80
 
 networks:
     comment-demo-network:
