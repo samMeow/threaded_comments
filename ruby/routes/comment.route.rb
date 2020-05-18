@@ -108,8 +108,8 @@ class CommentRoute < CRUDRoute
 
   get '/comments/:id' do |id|
     comment = @comment_model.first(id: id)
-    halt 404, { code: 404, message: "Comment #{id} not found" } if comment.nil?
-    comment.to_public.to_json
+    json_error "Comment #{id} not found" if comment.nil?
+    json comment.to_public
   end
 
   POST_COMMENT_SCHEMA = {
@@ -156,7 +156,7 @@ class CommentRoute < CRUDRoute
     end
 
     comment.save
-    comment.to_public.to_json
+    json comment.to_public
   end
 
   post '/comments/:id/upvote' do |id|
@@ -164,7 +164,7 @@ class CommentRoute < CRUDRoute
     json_error 404, "Comment #{id} not found" if comment.nil?
     comment.update(upvote: comment.upvote + 1)
     # Add upvote history in database for more comprehensive forumn
-    json comment
+    json comment.to_public
   end
 
   post '/comments/:id/downvote' do |id|
@@ -172,6 +172,6 @@ class CommentRoute < CRUDRoute
     json_error 404, "Comment #{id} not found" if comment.nil?
     comment.update(downvote: comment.downvote + 1)
     # Add upvote history in database for more comprehensive forumn
-    json comment
+    json comment.to_public
   end
 end
