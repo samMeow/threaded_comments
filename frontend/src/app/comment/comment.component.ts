@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, combineLatest, BehaviorSubject } from 'rxjs';
@@ -8,18 +8,23 @@ import { loadingObserver } from 'utils/loading';
 import findLastIndex from 'utils/findLastIndex';
 import rightMerge from 'utils/rightMerge';
 
+import { ThreadService } from 'app/thread/thread.service';
+import { Thread } from 'app/thread/thread';
+
 import { CommentService } from './comment.service';
 import { Comment, ListResponse } from './comment';
+
 
 const PAGE_SIZE = 5;
 @Component({
   selector: 'app-comments',
-  providers: [CommentService],
+  providers: [CommentService, ThreadService],
   templateUrl: './comment.component.html',
   styleUrls: ['./comment.component.css'],
 })
 export class CommentComponent implements OnInit {
   threadId: number;
+  thread: Thread;
   allowedSorting = [
     { value: 'list_desc', label: 'From new to old' },
     { value: 'list_asc', label: 'From old to new' },
@@ -41,11 +46,12 @@ export class CommentComponent implements OnInit {
   uiComments$ = this.uiComments.asObservable();
 
   newCommentForm = this.formBuilder.group({
-    message: ''
+    message: '',
   });
 
   constructor(
     private commentService: CommentService,
+    private threadService: ThreadService,
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
   ) {}
@@ -53,6 +59,9 @@ export class CommentComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.threadId = Number(params.get('threadId'));
+    });
+    this.threadService.getDetail(this.threadId).subscribe((result) => {
+      this.thread = result;
     });
     const listStream = this.sortChange$
       .pipe(flatMap(({ value }) =>

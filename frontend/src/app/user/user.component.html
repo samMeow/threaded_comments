@@ -1,0 +1,22 @@
+<form class="user-form" [formGroup]="userForm" (ngSubmit)="createUser(userForm.value)">
+  <mat-form-field class="form-field">
+    <input
+      matInput
+      name="name"
+      formControlName="name"
+      placeholder="Create User"
+      type="text"
+    />
+  </mat-form-field>
+  <button mat-stroked-button type="submit">
+    Create
+  </button>
+</form>
+<mat-form-field>
+  <mat-label>Current User</mat-label>
+  <mat-select (selectionChange)="changeUser($event)" [value]="(currentUser$ | async)?.id">
+    <mat-option *ngFor="let s of users" [value]="s.id">
+      {{s.name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>

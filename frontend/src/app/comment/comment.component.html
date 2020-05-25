@@ -1,6 +1,6 @@
 <a mat-button href="/" >Back</a>
 <div class="heading">
-  <h1>Thead 1</h1>
+  <h1>{{ thread?.title }}</h1>
   <mat-form-field>
     <mat-label>Sorting</mat-label>
     <mat-select (selectionChange)="sortChange.next($event)" [value]="allowedSorting[0].value">

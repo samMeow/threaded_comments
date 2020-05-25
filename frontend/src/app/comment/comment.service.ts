@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, flatMap, take } from 'rxjs/operators';
 
 import { environment } from 'environments/environment';
 
+import { User } from 'app/user/user';
+import { UserService } from 'app/user/user.service';
 import { ListResponse, Comment } from './comment';
+
 
 const handleError = <T>(result = {} as T) => (err: HttpErrorResponse) => {
   console.error(err);
@@ -16,7 +19,10 @@ const handleError = <T>(result = {} as T) => (err: HttpErrorResponse) => {
 export class CommentService {
   baseUrl = environment.commentAPIUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private userService: UserService,
+  ) {}
 
   getList(
       threadId: number,
@@ -70,20 +76,25 @@ export class CommentService {
     message: string,
     parentId?: number,
   ): Observable<Comment> {
-    return this.http.post<Comment>(
-      `${this.baseUrl}/comments`,
-      {
-        thread_id: threadId,
-        user_id: userId,
-        message,
-        ...(parentId && { parent_id: parentId }),
-      },
-      {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-        }),
-      }
-    ).pipe(catchError(handleError(null)));
+    return this.userService.currentUser$
+      .pipe(take(1))
+      .pipe(flatMap((user: User) => {
+        console.log(user);
+        return this.http.post<Comment>(
+          `${this.baseUrl}/comments`,
+          {
+            thread_id: threadId,
+            user_id: user.id,
+            message,
+            ...(parentId && { parent_id: parentId }),
+          },
+          {
+            headers: new HttpHeaders({
+              'Content-Type': 'application/json',
+            }),
+          }
+        ).pipe(catchError(handleError(null)));
+      }));
   }
 
   upvote(commentId: number): Observable<Comment> {

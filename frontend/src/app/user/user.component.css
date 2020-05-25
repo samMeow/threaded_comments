@@ -1,8 +1,10 @@
 :host {
   width: 100%;
   margin: auto;
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 1rem;
+  justify-content: flex-end;
 }
 
 @media screen and (min-width: 768px) {
@@ -11,12 +13,9 @@
   }
 }
 
-
-.thread-form {
+.user-form {
   display: flex;
   align-items: flex-start;
+  margin-right: 1rem;
 }
 
-.thread-form .form-field {
-  flex: 1;
-}

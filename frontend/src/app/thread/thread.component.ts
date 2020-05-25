@@ -11,7 +11,10 @@ import { ThreadService } from './thread.service';
 })
 export class ThreadComponent implements OnInit {
 
-constructor(private threadService: ThreadService, private formBuilder: FormBuilder) {}
+constructor(
+  private threadService: ThreadService,
+  private formBuilder: FormBuilder,
+) {}
 
   threads = [];
 
@@ -20,13 +23,21 @@ constructor(private threadService: ThreadService, private formBuilder: FormBuild
   });
 
   ngOnInit() {
+    this.refreshList();
+  }
+
+  refreshList() {
     this.threadService.getList().subscribe((result) => {
       this.threads = result;
+      this.newThreadForm.reset();
     });
   }
 
   createThread({ title }: { title: string }) {
-    
+    this.threadService.create(title)
+      .subscribe(() => {
+        this.refreshList();
+      });
   }
 }
 
