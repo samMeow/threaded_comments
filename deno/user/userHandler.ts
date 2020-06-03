@@ -3,13 +3,14 @@ import {
   Application,
   RouterContext,
 } from "https://deno.land/x/oak/mod.ts";
+import { Singleton, Inject } from "https://deno.land/x/alosaur/mod.ts";
+
 import { onlyJson } from "../utils/middleware.ts";
-import UserRepository from "./userRepository.ts";
+import { IUserRepository } from "./userRepository.ts";
 
-const router = new Router();
-
+@Singleton()
 export class UserHandler {
-  constructor(private userRepo: UserRepository) {}
+  constructor(@Inject('IUserRepository') private userRepo: IUserRepository) {}
 
   getUsers = async (ctx: RouterContext) => {
     const result = await this.userRepo.getUsers();
@@ -28,19 +29,20 @@ export class UserHandler {
   createUser = async (ctx: RouterContext) => {
     const body = await ctx.request.body() as { value: { name?: string } };
     const { value: { name } } = body;
-    // validation 
-    if (!name || name.trim() === '') {
-      ctx.throw(400, 'Missing name');
-      return
+    // validation
+    if (!name || name.trim() === "") {
+      ctx.throw(400, "Missing name");
+      return;
     }
     const id = await this.userRepo.createUser(name);
     const user = await this.userRepo.getUser(Number(id));
-    ctx.response.status = 201
+    ctx.response.status = 201;
     ctx.response.body = user;
   };
 }
 
 export default (app: Application, handler: UserHandler) => {
+  const router = new Router();
   router
     .get("/users", handler.getUsers)
     .get("/users/:id", handler.getUser)
