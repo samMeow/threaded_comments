@@ -2,17 +2,22 @@ import {
   Router,
   Application,
   RouterContext,
+  Context,
 } from "https://deno.land/x/oak/mod.ts";
-import { Singleton, Inject } from "https://deno.land/x/alosaur/mod.ts";
+import { Singleton, container } from "https://deno.land/x/alosaur/mod.ts";
 
 import { onlyJson } from "../utils/middleware.ts";
 import { IUserRepository } from "./userRepository.ts";
 
 @Singleton()
 export class UserHandler {
-  constructor(@Inject('IUserRepository') private userRepo: IUserRepository) {}
+  constructor(
+    private userRepo: IUserRepository = container.resolve<IUserRepository>(
+      "IUserRepository",
+    ),
+  ) {}
 
-  getUsers = async (ctx: RouterContext) => {
+  getUsers = async (ctx: Context) => {
     const result = await this.userRepo.getUsers();
     ctx.response.body = result;
   };
@@ -26,7 +31,7 @@ export class UserHandler {
     ctx.response.body = result;
   };
 
-  createUser = async (ctx: RouterContext) => {
+  createUser = async (ctx: Context) => {
     const body = await ctx.request.body() as { value: { name?: string } };
     const { value: { name } } = body;
     // validation

@@ -1,5 +1,8 @@
 import { Pool } from "https://deno.land/x/postgres/mod.ts";
-import { Injectable, Inject, container } from "https://deno.land/x/alosaur/mod.ts";
+import {
+  Injectable,
+  container,
+} from "https://deno.land/x/alosaur/mod.ts";
 
 type User = {
   id: number;
@@ -15,7 +18,7 @@ export interface IUserRepository {
 
 @Injectable()
 class UserRepository implements IUserRepository {
-  constructor(@Inject("Pool") private client: Pool) {}
+  constructor(private client: Pool = container.resolve("Pool")) {}
 
   async getUsers(): Promise<User[]> {
     const result = await this.client.query("SELECT * from users");
@@ -39,4 +42,4 @@ class UserRepository implements IUserRepository {
   }
 }
 
-export default UserRepository
+export default UserRepository;
